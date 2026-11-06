@@ -6,7 +6,7 @@ void App_W25Q64_Init(void)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
 	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_0;//cs
 	GPIO_InitStruct.GPIO_Mode=GPIO_Mode_Out_PP;
-	GPIO_InitStruct.GPIO_Speed=GPIO_Speed_2MHz;
+	GPIO_InitStruct.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOC,&GPIO_InitStruct);
 	GPIO_WriteBit(GPIOC,GPIO_Pin_0,Bit_SET);//系统上电 / GPIO 初始化完成后，CS 必须是高电平
   App_SPI1_Init();

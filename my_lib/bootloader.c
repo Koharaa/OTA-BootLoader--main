@@ -129,6 +129,7 @@ void Bootloader_Event(uint8_t *data,uint16_t datalen)
 		Delay(100);
 		NVIC_SystemReset();                //重启
 	}
+
  }
 	 else if(BootStatusFlag&IAP_XMDOEMData_FLAG)
 		{

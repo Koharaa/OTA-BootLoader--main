@@ -19,17 +19,17 @@ void App_SPI1_Init(void)
 
 	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_5;//SCLK
 	GPIO_InitStruct.GPIO_Mode=GPIO_Mode_AF_PP;
-	GPIO_InitStruct.GPIO_Speed=GPIO_Speed_2MHz;
+	GPIO_InitStruct.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA,&GPIO_InitStruct);
 
 	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_6;//MISO
 	GPIO_InitStruct.GPIO_Mode=GPIO_Mode_IN_FLOATING;//输入浮空模式
-	GPIO_InitStruct.GPIO_Speed=GPIO_Speed_2MHz;
+	GPIO_InitStruct.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA,&GPIO_InitStruct);
 
 	GPIO_InitStruct.GPIO_Pin=GPIO_Pin_7;//MOSI
 	GPIO_InitStruct.GPIO_Mode=GPIO_Mode_AF_PP;
-	GPIO_InitStruct.GPIO_Speed=GPIO_Speed_2MHz;
+	GPIO_InitStruct.GPIO_Speed=GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA,&GPIO_InitStruct);
 
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1,ENABLE);
