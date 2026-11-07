@@ -56,7 +56,7 @@ uint8_t Bootloader_Enter(uint8_t timeout)
 	while(timeout--)
 	{
 		Delay(100);
-		if(USART_Rx_Buffer[0]=='w')
+		if(USART1_Rx_Buffer[0]=='w')
 		{
 			return 1; //进入命令行
 		}
@@ -265,9 +265,13 @@ void Bootloader_Clear(void){
 	SysTick->VAL = 0;
 	SCB->ICSR = SCB_ICSR_PENDSTCLR_Msk;  //清除挂起的SysTick中断
 	NVIC_DisableIRQ(USART1_IRQn);    //关闭串口中断
+	NVIC_DisableIRQ(USART3_IRQn);    //关闭串口中断
 	NVIC_ClearPendingIRQ(USART1_IRQn);
+	NVIC_ClearPendingIRQ(USART3_IRQn);
 	DMA_DeInit(DMA1_Channel5);       //关闭串口接收DMA
+	DMA_DeInit(DMA1_Channel3); 
 	USART_DeInit(USART1);//复位串口
+	USART_DeInit(USART3);//复位串口
   GPIO_DeInit(GPIOA);  //复位GPIO
   GPIO_DeInit(GPIOB);
  

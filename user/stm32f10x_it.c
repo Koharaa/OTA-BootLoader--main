@@ -46,7 +46,7 @@ void USART1_IRQHandler(void)
     USART_GetFlagStatus(USART1,USART_FLAG_IDLE);     //清除空闲中断标志位步骤1：读取状态标志寄存器
     USART_ReceiveData(USART1);                       //清除空闲中断标志位步骤2： 读取数据寄存器，此时是自动清除   这里不设置START原因是CMAR = start在初始化就已经设置了
     USART_Rx_Ptr.URXCount+=RX_BUF_SIZE-DMA_GetCurrDataCounter(DMA1_Channel5);//DMA总量-剩余量 DMA接收量     //getcurrent剩余数据量 //+=操作，将本次的数据接收量，累计到URXCount变量
-    USART_Rx_Ptr.URxDataIn->end=&USART_Rx_Buffer[USART_Rx_Ptr.URXCount-1];//IN指针指向的结构体中的e指针记录本次接收的结束位置
+    USART_Rx_Ptr.URxDataIn->end=&USART1_Rx_Buffer[USART_Rx_Ptr.URXCount-1];//IN指针指向的结构体中的e指针记录本次接收的结束位置
     USART_Rx_Ptr.URxDataIn++;                        //IN指针向后移             
     if(USART_Rx_Ptr.URxDataIn == USART_Rx_Ptr.URxDataEnd)//如果后移到END标记的位置，进入if
     {
@@ -55,10 +55,10 @@ void USART1_IRQHandler(void)
     /* 开头：确定下一帧的起始位置（不管 In 是否回卷都要做） */
      if (RX_BUF_SIZE - USART_Rx_Ptr.URXCount >= RX_MAX + 1)
     {
-      USART_Rx_Ptr.URxDataIn->start = &USART_Rx_Buffer[USART_Rx_Ptr.URXCount]; // 空间够，接着往后存
+      USART_Rx_Ptr.URxDataIn->start = &USART1_Rx_Buffer[USART_Rx_Ptr.URXCount]; // 空间够，接着往后存
     }
     else{		
-      USART_Rx_Ptr.URxDataIn->start = USART_Rx_Buffer;     //下次接收位置返回缓冲区的起始位置
+      USART_Rx_Ptr.URxDataIn->start = USART1_Rx_Buffer;     //下次接收位置返回缓冲区的起始位置
       USART_Rx_Ptr.URXCount = 0;                           //累计值清零
     }
     DMA_Cmd(DMA1_Channel5, DISABLE);                     //关闭DMA通道
@@ -68,6 +68,35 @@ void USART1_IRQHandler(void)
   }
 }
 
+// @brief  USART3 中断处理函数
+void USART3_IRQHandler(void)
+{
+  if(USART_GetITStatus(USART3, USART_IT_IDLE) == SET)//如果USART_IT_IDLE置位，表示空闲中断发生，进入if
+  {
+    USART_GetFlagStatus(USART3,USART_FLAG_IDLE);     //清除空闲中断标志位步骤1：读取状态标志寄存器
+    USART_ReceiveData(USART3);                       //清除空闲中断标志位步骤2： 读取数据寄存器，此时是自动清除   这里不设置START原因是CMAR = start在初始化就已经设置了
+    USART3_Rx_Ptr.URXCount+=RX3_BUF_SIZE-DMA_GetCurrDataCounter(DMA1_Channel3);//DMA总量-剩余量 DMA接收量     //getcurrent剩余数据量 //+=操作，将本次的数据接收量，累计到URXCount变量
+    USART3_Rx_Ptr.URxDataIn->end=&USART3_Rx_Buffer[USART3_Rx_Ptr.URXCount-1];//IN指针指向的结构体中的e指针记录本次接收的结束位置
+    USART3_Rx_Ptr.URxDataIn++;                        //IN指针向后移             
+    if(USART3_Rx_Ptr.URxDataIn == USART3_Rx_Ptr.URxDataEnd)//如果后移到END标记的位置，进入if
+    {
+      USART3_Rx_Ptr.URxDataIn=&USART3_Rx_Ptr.URxData[0];   //回卷，重新指向0号成员
+    }
+    /* 开头：确定下一帧的起始位置（不管 In 是否回卷都要做） */
+     if (RX3_BUF_SIZE - USART3_Rx_Ptr.URXCount >= RX_MAX + 1)
+    {
+      USART3_Rx_Ptr.URxDataIn->start = &USART3_Rx_Buffer[USART3_Rx_Ptr.URXCount]; // 空间够，接着往后存
+    }
+    else{		
+      USART3_Rx_Ptr.URxDataIn->start = USART3_Rx_Buffer;     //下次接收位置返回缓冲区的起始位置
+      USART3_Rx_Ptr.URXCount = 0;                           //累计值清零
+    }
+    DMA_Cmd(DMA1_Channel3, DISABLE);                     //关闭DMA通道
+    DMA_SetCurrDataCounter(DMA1_Channel3, RX3_BUF_SIZE);  //重新设置接收量
+    DMA1_Channel3->CMAR = (uint32_t)USART3_Rx_Ptr.URxDataIn->start;//重新设置接收位置
+    DMA_Cmd(DMA1_Channel3, ENABLE);                      //开启DMA通道  
+  }
+}
 
 
 

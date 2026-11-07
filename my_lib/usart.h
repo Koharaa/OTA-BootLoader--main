@@ -11,6 +11,11 @@
 #define RX_MAX 2048            //单次接收最大量
 #define RX_BUF_SIZE 2048 // 接收数组缓冲区长度
 #define TX_BUF_SIZE 2048 // 发送数组缓冲区长度
+
+#define RX3_MAX 2048            //单次接收最大量
+#define RX3_BUF_SIZE 2048 // 接收数组缓冲区长度
+#define TX3_BUF_SIZE 2048 // 发送数组缓冲区长度
+
 #define LINE_SEPERATOR_CR   0x00 // 回车 \r
 #define LINE_SEPERATOR_LF   0x01 // 换行 \n
 #define LINE_SEPERATOR_CRLF 0x02 // 回车+换行 \r\n
@@ -32,10 +37,14 @@ typedef struct
 	UCB_RxBuffptr *URxDataEnd;// IN和OUT指针的结尾标志                   接收数据结束指针
 } UCB_RXPtr;               //串口控制结构体
 extern UCB_RXPtr USART_Rx_Ptr;
-extern uint8_t USART_Rx_Buffer[RX_BUF_SIZE];
+extern UCB_RXPtr USART3_Rx_Ptr;
+extern uint8_t USART1_Rx_Buffer[RX_BUF_SIZE];
+extern uint8_t USART3_Rx_Buffer[RX_BUF_SIZE];
 void usart_init(void);
+void usart3_init(void);
 void DMA_init(void);
 void Usart1Rx_PtrInit(void);
+void Usart3Rx_PtrInit(void);
 void My_USART_SendByte(USART_TypeDef *USARTx, const uint8_t Data);
 void My_USART_SendBytes(USART_TypeDef *USARTx, const uint8_t *pData, uint16_t Size);
 void My_USART_SendChar(USART_TypeDef *USARTx, const char C);

@@ -8,6 +8,7 @@
 #include "w25q64.h"
 #include "flash.h"
 #include "bootloader.h"
+#include "4g.h"
 //spi1 初始化
 //cs PA4
 //D0 PA6
@@ -29,9 +30,11 @@ int main(void)
 	uint8_t i;//用于for循环
 	
   NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);//中断优先级分组2
-  usart_init();//串口初始化
-  My_I2C_Init();//I2C初始化
   Delay_Init();//延时初始化
+  usart_init();//串口初始化
+  usart3_init();//串口3初始化
+  My_I2C_Init();//I2C初始化
+  EC800_4g_Init();//4G模块初始化
   App_SPI1_Init();//SPI初始化
   App_W25Q64_Init();//25Q64初始化
 	AT24C02_ReadOTAInfo();//从24C02读取数据到OTA_Info结构体
@@ -40,21 +43,41 @@ int main(void)
 //	My_USART_Printf(USART1,"%x\r\n",Xmdoem_CRC16(a,5));  例子 8208
 
 	
-	
+
   Bootloader_Branch();//分支判断
 	//主循环
   while(1)
 	{
 		Delay(10);
- 	 if(USART_Rx_Ptr.URxDataOut!=USART_Rx_Ptr.URxDataIn)	
-{
-	Bootloader_Event(USART_Rx_Ptr.URxDataOut->start,USART_Rx_Ptr.URxDataOut->end-USART_Rx_Ptr.URxDataOut->start+1);
-  USART_Rx_Ptr.URxDataOut++;
-   if(USART_Rx_Ptr.URxDataOut == USART_Rx_Ptr.URxDataEnd)
-  {
-    USART_Rx_Ptr.URxDataOut=&USART_Rx_Ptr.URxData[0];
-  }
-}
+		/*--------------------------------------------------*/
+		/*              处理串口接收缓冲区的数据              */
+		/*--------------------------------------------------*/
+		if(USART_Rx_Ptr.URxDataOut != USART_Rx_Ptr.URxDataIn)   //OUT和IN不相等，说明中断里收到了新的一帧数据还没处理，进入if
+		{
+			Bootloader_Event(USART_Rx_Ptr.URxDataOut->start,      //调用Bootloader_Event处理数据，参数1：这一帧在缓冲区里的起始地址
+			                 USART_Rx_Ptr.URxDataOut->end - USART_Rx_Ptr.URxDataOut->start + 1);  //参数2：这一帧的长度。end指向最后一个字节本身，所以要+1
+			USART_Rx_Ptr.URxDataOut++;                             //这一帧处理完，OUT后移，指向下一帧
+			if(USART_Rx_Ptr.URxDataOut == USART_Rx_Ptr.URxDataEnd) //如果移到了END标记，也就是越过了数组最后一个成员，进入if
+			{
+				USART_Rx_Ptr.URxDataOut = &USART_Rx_Ptr.URxData[0];  //重新回到数组0号成员，和中断里IN指针的回卷方式相同
+			}
+		}
+        
+
+		if(USART3_Rx_Ptr.URxDataOut != USART3_Rx_Ptr.URxDataIn)   //OUT和IN不相等，说明中断里收到了新的一帧数据还没处理，进入if
+		{
+			My_USART_Printf(USART1,"本次接受%d字节数据\r\n",USART3_Rx_Ptr.URxDataOut->end - USART3_Rx_Ptr.URxDataOut->start + 1);//打印本次接收数据的长度
+			for(i=0;i<USART3_Rx_Ptr.URxDataOut->end - USART3_Rx_Ptr.URxDataOut->start + 1;i++)//循环打印本次接收的数据
+			{
+				My_USART_Printf(USART1,"%c",*(USART3_Rx_Ptr.URxDataOut->start+i));//打印本次接收的数据
+			}
+			USART3_Rx_Ptr.URxDataOut++;                             //这一帧处理完，OUT后移，指向下一帧
+			if(USART3_Rx_Ptr.URxDataOut == USART3_Rx_Ptr.URxDataEnd) //如果移到了END标记，也就是越过了数组最后一个成员，进入if
+			{
+				USART3_Rx_Ptr.URxDataOut = &USART3_Rx_Ptr.URxData[0];  //重新回到数组0号成员，和中断里IN指针的回卷方式相同
+			}
+		}
+
 		 if(BootStatusFlag&IAP_XMDOEMC_FLAG)
 		 {
 			 if(UpData_a.XmdoemTimer>=100)
